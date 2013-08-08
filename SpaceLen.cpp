@@ -3,12 +3,12 @@
  *
  * This library encodes, encrypts en transmits data to
  * remote weather stations made by Hideki Electronics..
- * 
+ *
  * Copyright 2011 by Randy Simons http://randysimons.nl/
  *
  * Parts of this code based on Oopsje's CrestaProtocol.pdf, for which
  * I thank him very much!
- * 
+ *
  * License: GPLv3. See license.txt
  */
 
@@ -23,37 +23,40 @@ byte SpaceLen::data[14];
 word SpaceLen::duration;
 boolean SpaceLen::enabled;
 int SpaceLen::markerState;
+int8_t _interrupt;
 
 boolean SpaceLen::packagestart;
 
 void SpaceLen::init(short int interrupt, SpaceLenCallback callbackIn) {
-  callback = callbackIn;
-  enable();
-  
-  if (interrupt >= 0) {
-	attachInterrupt(interrupt, interruptHandler, CHANGE);
-  }  
+    callback = callbackIn;
+    enable();
+    _interrupt = interrupt;
+    
+    if (interrupt >= 0) {
+        //attachInterrupt(interrupt, interruptHandler, RISING);
+    }
 }
 
-void SpaceLen::interruptHandler() {	
+
+void SpaceLen::interruptHandler() {
 	if (!enabled) {
 		return;
 	}
-
-	/* 
-	The bits are encoded in the spacelength.
-	The package starts with a space of minimal 5ms.
-	the markers are around 350us.
-	After every marker a space follows of 990us for 0 and 1900 for 1.
-	the fluctuation was terrible because some '1's were 1200.
-	*/
+        
+	/*
+     The bits are encoded in the spacelength.
+     The package starts with a space of minimal 5ms.
+     the markers are around 350us.
+     After every marker a space follows of 990us for 0 and 1900 for 1.
+     the fluctuation was terrible because some '1's were 1200.
+     */
 	unsigned long currentTime=micros();
 	duration=currentTime-lastChange; // Duration = Time between edges
 	lastChange=currentTime;
-
-	int state=digitalRead(2);
-
-	// A package starts with a long space but it's detected afterwards. that's why the state is the markerstate.	
+    
+	int state=digitalRead(_interrupt);
+    
+	// A package starts with a long space but it's detected afterwards. that's why the state is the markerstate.
 	if ( duration > 4000 ) {
 		packagestart=true;
 		halfBit=0;
@@ -69,7 +72,7 @@ void SpaceLen::interruptHandler() {
 				//Serial.println('.');
 				return;
 			}
-
+            
 			if ( state != markerState) {
 				//capture the first package for the clockpulselength
 				if ( clockTime==0 ) {
@@ -79,36 +82,36 @@ void SpaceLen::interruptHandler() {
 						reset();
 						return;
 					}
-				} 
+				}
 				if ( duration > ( 2000 )) {
 					// should be the same as all markers
 					reset();
 					//Serial.print(duration);
 					//Serial.println('!');
-					return;						
-				}  
-			} else { 
-				// if the pulse is near 1x the clock is't a 0
+					return;
+				}
+			} else {
+				// if the pulse is near 1x the clock it is a 0
 				isOne=( duration < ( clockTime * 4 ))?false:true; //1060
 				//Serial.print(isOne?'1':'0');
 				byte currentByte = halfBit / 8;
-				byte currentBit = 7-(halfBit  % 8); 
+				byte currentBit = 7-(halfBit  % 8);
 				if (currentBit < 8) {
 					if (isOne) {
 						// Set current bit of current byte
 						data[currentByte] |= 1 << currentBit;
-					} 
-						else {
-					  // Reset current bit of current byte
-					  data[currentByte] &= ~(1 << currentBit);
 					}
-				} 
+                    else {
+                        // Reset current bit of current byte
+                        data[currentByte] &= ~(1 << currentBit);
+					}
+				}
 				// the weatherstation package is 32 bits
-				if ( halfBit==31 ) { 	
+				if ( halfBit==31 ) {
 					//Serial.println("Complete:");
 					//Serial.print("Clock: ");
 					//Serial.print(clockTime);
-					(callback)(data);	
+					(callback)(data);
 					reset();
 					return;
 				}
@@ -118,7 +121,7 @@ void SpaceLen::interruptHandler() {
 					return;
 				}
 				halfBit++;
-			}		
+			}
 		}
 	}
 	return;
