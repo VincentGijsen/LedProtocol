@@ -82,7 +82,15 @@ class LedProtocol {
 		 * with interrupt <0, you have to call interruptHandler() yourself. (Or use InterruptChain)
 		 */
 		static void interruptHandler();
-     
+    
+    
+        /**
+         *
+         *  Send a 4-byte package onto the ether:
+         * output: output pin onto who to send.
+         */
+        static void sendPackage(short int output, byte package[4]);
+    
 	private:
 		/**
 		 * Quasi-reset. Called when the current edge is too long or short.

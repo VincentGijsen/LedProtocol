@@ -147,3 +147,59 @@ void LedProtocol::enable() {
 void LedProtocol::disable() {
 	enabled = false;
 }
+
+void LedProtocol::sendPackage(short int output, byte package[4]){
+    LedProtocol::disable();
+    pinMode(output, OUTPUT);
+    //do simple pulse to start the high block
+    digitalWrite(output, HIGH);
+    
+    delayMicroseconds(20);
+    digitalWrite(output, LOW);
+    delayMicroseconds(2);
+    
+    //start with PREAMBLE
+    digitalWrite(output, HIGH);
+    //first 8.7ms high
+    delayMicroseconds(8700);
+    //low 4.5ms;
+    digitalWrite(output, LOW);
+    //emperical approach, probably due clock skew neede, feedback measre says 4500 -> 5500 us
+    delayMicroseconds(3700);
+
+    //for every bit in the bytes, generate puls + spaceLenth
+    for(int x=0;x<4;x++){
+        byte currentByte = package[x];
+        for (int y=0;y<8;y++){
+            
+            //first generate the pulse high -> low, than wait for
+            if( !((currentByte << y) & (1 << 7))){
+               // Serial.print("1");
+             // a ZERO, so pulse of 450 uS high and than space of 1.8mS
+                digitalWrite(output, HIGH);
+                delayMicroseconds(350);
+                digitalWrite(output, LOW);
+                //delay(2);
+                delayMicroseconds(400);
+                
+            }
+            else{
+             //   Serial.print("0");
+             // a ONE, so pulse of  400uS high and a space of 400 ~ 500 uS
+                digitalWrite(output, HIGH);
+                delayMicroseconds(350);
+                digitalWrite(output, LOW);
+                delayMicroseconds(1450);
+            }
+        }
+     //   Serial.print(" ");
+        
+        
+    }
+    //do last maker to make last bit proper spaceLenght
+    digitalWrite(output, HIGH);
+    delayMicroseconds(300);
+    digitalWrite(output, LOW);
+    LedProtocol::enable();
+}
+
