@@ -1,42 +1,19 @@
+LedProtocol
+
+This slightly modified version of SpaceLen library by Randy Simmons lets you read (and control in a bit), Led controllers
+Modifications by Vincent Gijsen (http://www.vincentgijsen.nl)
+
+
 SpaceLen library v1.0.0 (20130122) for Arduino 1.0
 Made by Randy Simons http://randysimons.nl/ adopted for yt weather station
 
 
-This software is based on the work of Oopsje. See docs/CrestaProtocol.pdf
+--initial version.
 
-License: GPLv3. See ./RemoteSensor/license.txt
+this code was written for ENERGIA rather than ARDUINO, as the MSP chips don't have the 'change' event-type, it is implemented in software in the latets commits (as of ~5 aug 2013).
 
-Latest source and wiki: https://bitbucket.org/fuzzillogic/433mhzforarduino
+Therefore you'll find some workaround which calls the interuptHandler inside the library. 
 
-
-Installation of library:
- - Make sure Arduino is closed
- - Copy the directory RemoteSensor to the Arduino library directory (usually
-   <Sketchbook directory>/libraries/)
-   See http://arduino.cc/en/Guide/Libraries for detailed instructions.
- 
-Default installation sender & demo:
- - Connect tha data-in-pin of a 433MHz transmitter to digital pin 11. See 
-   docs/hardware setup.jpg.
-   (Note: your hardware may have a different pin configuration!)
- - Start Arduino, and open the example: File -> Examples -> RemoteSensor ->
-   ThermoHygroTransmitter
- - Alter addresses/devices to reflect your own setup. Otherwise nothing will
-   happen.
- - Compile, upload and run!
-
-Default installation receiver & demo:
- - Connect the data-out-pin of a 433MHz receiver to digital pin 2. See photo.
-  (Note: your hardware may have a different pin configuration!)
- - Start Arduino, and open the example: File -> Examples -> RemoteSensor ->
-   ThermoHygroReceiver
- - Compile, upload and run
- - Open serial monitor in Arduino (115200 baud)
- - Wait for your 433MHz-sensor to transmit (less than 1 minute), and watch the
-   serial monitor
+For arduino users, just change the addInterupt to utilize 'change' and strip out the not(bit) P1IES stuff int he interuptHandler in the example code.
 
 
-
-
-RemoteSensor library v1.0.0 (20130122) for Arduino 1.0.2
- - Initial version
